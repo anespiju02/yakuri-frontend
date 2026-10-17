@@ -1,0 +1,170 @@
+<div class="space-y-8">
+  <!-- Encabezado -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Sección 4 y 5 · Flujo Funcional</span>
+      <h1 class="text-2xl md:text-3xl font-black text-white">
+        Escáner de Etiquetas y Motor A–E
+      </h1>
+    </div>
+
+    <!-- Muestras rápidas del mercado peruano -->
+    <div class="flex flex-wrap gap-2">
+      @for (sample of presets; track sample.label) {
+      <button type="button" (click)="loadPreset(sample)"
+        class="text-xs px-3 py-2 rounded-xl border border-slate-700 bg-slate-900 hover:border-cyan-400 text-slate-200 transition">
+        {{ sample.label }}
+      </button>
+      }
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Panel Izquierdo: Entrada OCR + Caja de Aislamiento Comercial (6.1) -->
+    <div class="lg:col-span-5 space-y-5 rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+          Texto Extraído de la Etiqueta (OCR / Simulado)
+        </label>
+        <textarea rows="5" [(ngModel)]="rawOcrText"
+          class="w-full rounded-2xl bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:outline-none p-4 text-sm text-slate-100 font-mono"
+          placeholder="Ingredientes: Aqua, Sodium Laureth Sulfate..."></textarea>
+      </div>
+
+      <!-- Caja interactiva para demostrar Regla Ética 6.1 -->
+      <div class="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-amber-300">🔒 Regla Ética 6.1: Variables Comerciales Bloqueadas</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-200">IGNORADAS EN
+            CÁLCULO</span>
+        </div>
+        <p class="text-xs text-slate-300">
+          Cambia libremente la marca o el precio en soles: comprobarás que el motor devuelve
+          exactamente el mismo <code class="text-cyan-300">score_numeric</code>.
+        </p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Marca Comercial</label>
+            <input type="text" [(ngModel)]="brandIgnored"
+              class="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-200" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Precio (S/ PEN)</label>
+            <input type="number" [(ngModel)]="priceIgnored"
+              class="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-200" />
+          </div>
+        </div>
+      </div>
+
+      <button type="button" (click)="runScan()" [disabled]="loading()"
+        class="w-full py-3.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-black text-sm transition shadow-lg shadow-cyan-500/20">
+        {{ loading() ? 'Analizando etiqueta...' : 'Calcular Impacto Hídrico A–E' }}
+      </button>
+    </div>
+
+    <!-- Panel Derecho: Resultado A-E, Explicación RAG y Trazabilidad 6.4 -->
+    <div class="lg:col-span-7 space-y-5">
+      @if (scanResult(); as res) {
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 space-y-6">
+        <!-- Cabecera del resultado -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-5">
+          <div>
+            <span class="text-xs font-mono text-slate-400">ID Escaneo: {{ res.scan_id }}</span>
+            <h2 class="text-xl font-bold text-white mt-0.5">
+              Resultado del Análisis Hídrico
+            </h2>
+          </div>
+          <app-score-badge [grade]="res.water_impact_score" [scoreNumeric]="res.score_numeric" />
+        </div>
+
+        <!-- Explicación en Lenguaje Natural (RAG Restringido - Sección 5) -->
+        <div class="p-5 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-300">
+              Explicación RAG Restringida a Evidencia (Sección 5)
+            </span>
+            <span class="text-[11px] text-slate-400">Máx. 3 oraciones · Sin alucinaciones</span>
+          </div>
+          <p class="text-sm md:text-base text-slate-100 leading-relaxed">
+            {{ res.explanation }}
+          </p>
+        </div>
+
+        <!-- Alerta de Datos Insuficientes (Regla 6.2) -->
+        @if (res.insufficient_data_ingredients.length > 0) {
+        <div class="p-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 space-y-1">
+          <p class="text-xs font-bold text-amber-300">
+            ⚠️ Regla Ética 6.2 Aplicada: Ingredientes Excluidos por Evidencia Insuficiente
+            ({{ res.insufficient_data_ingredients.length }})
+          </p>
+          <p class="text-xs text-slate-200">
+            Los ingredientes con ID
+            <code class="font-mono text-amber-200">{{
+                      res.insufficient_data_ingredients.join(', ')
+                    }}</code>
+            no poseen estudios ecotoxicológicos concluyentes en ECHA/EPA. No se les asignó
+            peso por defecto para no penalizar a formulaciones locales.
+          </p>
+        </div>
+        }
+
+        <!-- Tabla de Trazabilidad Científica por Ingrediente (Regla 6.4) -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">
+            Trazabilidad Científica por Ingrediente (Regla 6.4)
+          </h3>
+
+          <div class="space-y-2.5">
+            @for (item of res.traceability_details; track item.id) {
+            <div
+              class="p-4 rounded-2xl border border-slate-800 bg-slate-950/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-white">{{ item.inci_name }}</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 uppercase">
+                    {{ item.category }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300">{{ item.justification }}</p>
+                <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pt-1">
+                  <span>Fuente: <strong class="text-cyan-300">{{ item.source }}</strong></span>
+                  <span>·</span>
+                  <span>Revisión:
+                    <strong class="text-slate-200">{{ item.last_reviewed }}</strong></span>
+                </div>
+              </div>
+
+              <div class="sm:text-right shrink-0">
+                @if (item.status === 'verified') {
+                <span
+                  class="inline-block px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs font-bold text-cyan-300">
+                  Peso: {{ item.water_impact_weight?.toFixed(2) }}
+                </span>
+                } @else {
+                <span
+                  class="inline-block px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 font-mono text-xs font-bold text-amber-300">
+                  insufficient_data (Excluido)
+                </span>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Alternativas sugeridas -->
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+          <p class="text-xs font-bold uppercase tracking-wider text-emerald-400">
+            Alternativas Químicas Sugeridas (Sin marcas patrocinadas)
+          </p>
+          <ul class="list-disc list-inside text-xs text-slate-300 space-y-1">
+            @for (alt of res.alternatives; track alt) {
+            <li>{{ alt }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl border" [class]="badgeClasses()">
+  <span class="text-3xl font-black tracking-tight">{{ grade() }}</span>
+  <div class="text-left leading-tight">
+    <p class="text-[11px] font-bold uppercase tracking-wider opacity-80">Impacto Hídrico</p>
+    <p class="text-sm font-mono font-bold">
+      {{ scoreNumeric() !== null ? scoreNumeric()?.toFixed(2) : 'Sin datos' }}
+    </p>
+  </div>
+</div>

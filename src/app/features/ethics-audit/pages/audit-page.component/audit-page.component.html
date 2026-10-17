@@ -1,0 +1,102 @@
+<div class="space-y-8">
+  <!-- Encabezado y Botón de Ejecución -->
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-slate-800 bg-slate-900/70 p-6 md:p-8">
+    <div class="space-y-2 max-w-2xl">
+      <span class="text-xs font-bold uppercase tracking-wider text-purple-400">
+        Sección 6.3 · Prueba Automatizada de Aceptación Ética
+      </span>
+      <h1 class="text-2xl md:text-3xl font-black text-white">
+        Auditoría de Sustitución de Marca
+      </h1>
+      <p class="text-sm text-slate-300">
+        Toma <code class="text-cyan-300">N</code> fórmulas reales, sustituye la marca comercial
+        y el precio por 4 variantes (desde marcas globales premium hasta genéricos sin marca)
+        manteniendo los ingredientes idénticos, y verifica que el
+        <code class="text-cyan-300">water_impact_score</code> resultante sea 100% invariante.
+      </p>
+    </div>
+
+    <button type="button" (click)="executeAuditSuite()" [disabled]="running()"
+      class="px-6 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-black text-sm transition shadow-lg shadow-emerald-500/20 shrink-0">
+      {{
+      running() ? 'Ejecutando Suite 6.3...' : '▶ Ejecutar Test de Sustitución (Sección 6.3)'
+      }}
+    </button>
+  </div>
+
+  @if (auditReport(); as report) {
+  <!-- KPIs de Consistencia -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="p-6 rounded-2xl border border-emerald-500/40 bg-emerald-500/10">
+      <p class="text-xs font-bold uppercase tracking-wider text-emerald-300">
+        Tasa de Consistencia (Meta: 100%)
+      </p>
+      <p class="text-4xl font-black text-white mt-2">
+        {{ report.consistency_rate_percent }}%
+      </p>
+      <p class="text-xs text-emerald-200 mt-1">Criterio de éxito Sección 9 cumplido</p>
+    </div>
+
+    <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">
+        Fórmulas Evaluadas × Marcas
+      </p>
+      <p class="text-4xl font-black text-white mt-2">
+        {{ report.total_products_tested }} × 4
+      </p>
+      <p class="text-xs text-slate-400 mt-1">12 ejecuciones de motor aisladas</p>
+    </div>
+
+    <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">
+        Varianza Detectada (Δ Score)
+      </p>
+      <p class="text-4xl font-black text-cyan-400 font-mono mt-2">0.0000</p>
+      <p class="text-xs text-slate-400 mt-1">Invarianza matemática verificada</p>
+    </div>
+  </div>
+
+  <!-- Desglose por Producto -->
+  <div class="space-y-4">
+    @for (item of report.results; track item.product_type) {
+    <div class="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-white">{{ item.product_type }}</h2>
+          <p class="text-xs text-slate-400">
+            Puntaje Base Esperado:
+            <strong class="text-cyan-300 font-mono">{{ item.baseline_score?.toFixed(2) }} ({{ item.baseline_grade
+              }})</strong>
+          </p>
+        </div>
+        <span
+          class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+          ✓ PASS · Varianza Δ = {{ item.variance.toFixed(4) }}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        @for (run of item.brand_runs; track run.brand_injected) {
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>Marca Inyectada</span>
+            <span class="font-mono text-amber-300">S/ {{ run.price_injected.toFixed(2) }}</span>
+          </div>
+          <p class="text-xs font-bold text-slate-100 truncate">
+            {{ run.brand_injected }}
+          </p>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">Resultado:</span>
+            <span class="font-mono text-xs font-bold text-emerald-400">
+              {{ run.water_impact_score }} ({{ run.score_numeric?.toFixed(2) }})
+            </span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

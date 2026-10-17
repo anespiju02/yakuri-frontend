@@ -1,0 +1,133 @@
+<div class="space-y-8">
+  <!-- Encabezado y Métricas de la Base Científica -->
+  <div
+    class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-3xl border border-slate-800 bg-slate-900/70 p-6 md:p-8">
+    <div class="space-y-2 max-w-2xl">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">
+        Sección 4.1 y 6.4 · Catálogo Auditable de Ingredientes
+      </span>
+      <h1 class="text-2xl md:text-3xl font-black text-white">
+        Base Científica de Impacto Hídrico
+      </h1>
+      <p class="text-sm text-slate-300">
+        Cada registro documenta su nombre INCI, sinónimos para emparejamiento PLN, peso de
+        impacto hídrico (0 a 1), fuente regulatoria oficial (<code class="text-cyan-300">ECHA</code>, <code
+          class="text-cyan-300">US EPA</code>, <code class="text-cyan-300">CosIng</code>)
+        y fecha de última revisión. Los insumos con
+        <code class="text-amber-300">insufficient_data</code> no reciben peso por defecto (Regla
+        6.2).
+      </p>
+    </div>
+
+    <!-- Resumen de Conteo -->
+    <div class="grid grid-cols-3 gap-3 shrink-0">
+      <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center">
+        <p class="text-2xl font-black text-white">{{ ingredients().length }}</p>
+        <p class="text-[11px] text-slate-400 uppercase font-bold mt-0.5">Total Vista</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center">
+        <p class="text-2xl font-black text-emerald-300">{{ verifiedCount() }}</p>
+        <p class="text-[11px] text-emerald-200 uppercase font-bold mt-0.5">Verificados</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center">
+        <p class="text-2xl font-black text-amber-300">{{ insufficientCount() }}</p>
+        <p class="text-[11px] text-amber-200 uppercase font-bold mt-0.5">Sin Datos (6.2)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Búsqueda y Filtros -->
+  <div
+    class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+    <div class="flex-1">
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="loadIngredients()"
+        placeholder="Buscar por nombre INCI (ej. Triclosan), sinónimo local (ej. SLES, Tara, Muña) o categoría..."
+        class="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:outline-none px-4 py-2.5 text-sm text-slate-100" />
+    </div>
+
+    <div class="flex items-center gap-2">
+      @for (filter of statusFilters; track filter.value) {
+      <button type="button" (click)="setFilter(filter.value)"
+        class="px-3.5 py-2 rounded-xl text-xs font-bold border transition" [class]="
+                selectedStatus() === filter.value
+                  ? 'bg-cyan-500 text-slate-950 border-cyan-400'
+                  : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+              ">
+        {{ filter.label }}
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla / Grid de Ingredientes -->
+  @if (loading()) {
+  <div class="p-12 text-center text-slate-400 text-sm">Cargando catálogo científico...</div>
+  } @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    @for (ing of ingredients(); track ing.id) {
+    <div
+      class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col justify-between gap-4 hover:border-slate-700 transition">
+      <div class="space-y-2.5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-mono text-slate-400">{{ ing.id }}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-cyan-300 uppercase font-semibold">
+                {{ ing.category }}
+              </span>
+            </div>
+            <h2 class="text-lg font-bold text-white mt-0.5">{{ ing.inci_name }}</h2>
+          </div>
+
+          @if (ing.status === 'verified' && ing.water_impact_weight !== null) {
+          <div class="text-right shrink-0">
+            <span class="inline-block px-3 py-1 rounded-xl font-mono text-xs font-black border"
+              [class]="getWeightBadgeClass(ing.water_impact_weight)">
+              Peso: {{ ing.water_impact_weight.toFixed(2) }}
+            </span>
+          </div>
+          } @else {
+          <span
+            class="inline-block px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 font-mono text-xs font-bold text-amber-300 shrink-0">
+            insufficient_data (Peso: null)
+          </span>
+          }
+        </div>
+
+        <!-- Sinónimos PLN -->
+        @if (ing.synonyms.length > 0) {
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-[11px] text-slate-400">Sinónimos PLN:</span>
+          @for (syn of ing.synonyms; track syn) {
+          <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
+            {{ syn }}
+          </span>
+          }
+        </div>
+        }
+
+        <!-- Justificación Documentada (Usada por el RAG en Sección 5) -->
+        <p class="text-xs text-slate-200 leading-relaxed bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+          {{ ing.justification }}
+        </p>
+      </div>
+
+      <!-- Pie de Trazabilidad Científica (Regla 6.4) -->
+      <div
+        class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <span>Fuente: <strong class="text-emerald-300">{{ ing.source }}</strong></span>
+          <span>·</span>
+          <span>Revisado:
+            <strong class="text-slate-200 font-mono">{{ ing.last_reviewed }}</strong></span>
+        </div>
+        <a [href]="ing.source_url" target="_blank" rel="noopener"
+          class="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2">
+          Ver Ficha Oficial ↗
+        </a>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

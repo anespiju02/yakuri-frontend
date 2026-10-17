@@ -1,0 +1,187 @@
+<div class="space-y-10">
+  <!-- Hero Banner -->
+  <section
+    class="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/50 p-8 md:p-10 shadow-2xl">
+    <div class="max-w-3xl space-y-5">
+      <div
+        class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+        <span>Universidad Continental · Maestría en IA</span>
+        <span class="text-slate-600">|</span>
+        <span>Lima Metropolitana, Perú</span>
+      </div>
+
+      <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+        Yakuri: IA ética para mirar el impacto en nuestra agua
+      </h1>
+
+      <p class="text-slate-300 text-base md:text-lg leading-relaxed">
+        Del quechua <strong class="text-cyan-300">yaku</strong> (agua) y
+        <strong class="text-cyan-300">rikuy</strong> (mirar). Prototipo funcional que lee
+        etiquetas de productos de limpieza y cuidado personal, calcula su índice de impacto
+        hídrico <strong class="text-white">A–E</strong> y explica el resultado mediante
+        <strong class="text-emerald-300">RAG estrictamente restringido a evidencia científica</strong>
+        (ECHA, US EPA, CosIng).
+      </p>
+
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a routerLink="/escaner"
+          class="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-cyan-500/20">
+          Probar Escáner de Etiquetas →
+        </a>
+        <a routerLink="/auditoria-etica"
+          class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition">
+          Ejecutar Prueba de Sustitución de Marca (6.3)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arquitectura Funcional Interactiva (Sección 3) -->
+  <section class="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8 space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Sección 3 · Arquitectura Funcional</span>
+        <h2 class="text-xl md:text-2xl font-bold text-white">
+          Pipeline de Procesamiento y Auditoría Ética
+        </h2>
+      </div>
+      <span class="text-xs text-slate-400">Haz clic en cada etapa para inspeccionar entrada, salida y control
+        ético</span>
+    </div>
+
+    <!-- Botones de etapas -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+      @for (node of pipelineNodes; track node.step) {
+      <button type="button" (click)="selectedNode.set(node)"
+        class="text-left p-3.5 rounded-2xl border transition-all flex flex-col justify-between min-h-[110px]" [class]="
+                selectedNode().step === node.step
+                  ? 'bg-cyan-500/15 border-cyan-400 text-white shadow-lg shadow-cyan-500/10'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+              ">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-cyan-300">
+            Paso {{ node.step }}
+          </span>
+        </div>
+        <div class="mt-3">
+          <p class="text-xs font-bold leading-snug text-slate-100">{{ node.title }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">{{ node.subtitle }}</p>
+        </div>
+      </button>
+      }
+    </div>
+
+    <!-- Detalle del nodo seleccionado -->
+    <div
+      class="rounded-2xl border border-slate-800 bg-slate-950/90 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <div class="lg:col-span-5 space-y-2">
+        <div class="inline-flex items-center gap-2 text-xs font-mono text-cyan-400">
+          <span>ETAPA 0{{ selectedNode().step }}</span>
+          <span>·</span>
+          <span>{{ selectedNode().tech }}</span>
+        </div>
+        <h3 class="text-xl font-bold text-white">{{ selectedNode().title }}</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">{{ selectedNode().description }}</p>
+        <div class="pt-2">
+          <span
+            class="inline-block text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium">
+            🛡️ Control Ético: {{ selectedNode().ethicalControl }}
+          </span>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <p class="text-[11px] font-mono uppercase text-slate-400 mb-1.5">Entrada (Input)</p>
+          <code class="text-xs text-cyan-200 font-mono break-words">{{
+                selectedNode().inputSample
+              }}</code>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
+          <p class="text-[11px] font-mono uppercase text-slate-400 mb-1.5">Salida (Output)</p>
+          <code class="text-xs text-emerald-300 font-mono break-words">{{
+                selectedNode().outputSample
+              }}</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reglas Éticas Obligatorias (Sección 6) -->
+  <section class="space-y-4">
+    <div>
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Sección 6 · Restricciones de Diseño
+        Obligatorias</span>
+      <h2 class="text-xl md:text-2xl font-bold text-white">
+        Controles Éticos Verificables por Contrato de Código
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-2">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Regla
+            6.1</span>
+          <span class="text-xs text-emerald-400 font-semibold">Activo en Motor A–E</span>
+        </div>
+        <h3 class="text-base font-bold text-white">Independencia Comercial</h3>
+        <p class="text-sm text-slate-300">
+          La función <code class="text-cyan-300">calculate_water_impact(ingredients)</code> no
+          recibe nombre de marca, fabricante, precio ni comisiones. Dos productos con idéntica
+          fórmula obtienen siempre el mismo <code class="text-cyan-300">score_numeric</code>.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-2">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">Regla
+            6.2</span>
+          <span class="text-xs text-emerald-400 font-semibold">Protección a Marcas Locales</span>
+        </div>
+        <h3 class="text-base font-bold text-white">Manejo Justo de Datos Insuficientes</h3>
+        <p class="text-sm text-slate-300">
+          Ingredientes sin evidencia suficiente (<code class="text-amber-300">status: "insufficient_data"</code>, como
+          insumos botánicos andinos) no reciben peso por defecto: se excluyen del
+          promedio numérico y se reportan con transparencia.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-2">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">Regla
+            6.3</span>
+          <span class="text-xs text-emerald-400 font-semibold">Meta: 100% Consistencia</span>
+        </div>
+        <h3 class="text-base font-bold text-white">
+          Prueba Automatizada de Sustitución de Marca
+        </h3>
+        <p class="text-sm text-slate-300">
+          Suite automatizada que inyecta múltiples marcas y precios a un mismo conjunto de
+          ingredientes y verifica que la varianza del puntaje sea exactamente
+          <code class="text-purple-300">Δ = 0.00</code>.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-2">
+        <div class="flex items-center justify-between">
+          <span
+            class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Regla
+            6.4</span>
+          <span class="text-xs text-emerald-400 font-semibold">Cero Alucinaciones</span>
+        </div>
+        <h3 class="text-base font-bold text-white">
+          Trazabilidad Científica y RAG Restringido
+        </h3>
+        <p class="text-sm text-slate-300">
+          Cada ingrediente usado en el cálculo expone su fuente oficial (<code class="text-emerald-300">ECHA</code>,
+          <code class="text-emerald-300">US EPA</code>,
+          <code class="text-emerald-300">CosIng</code>) y fecha de revisión (<code
+            class="text-emerald-300">last_reviewed</code>).
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

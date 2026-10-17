@@ -1,0 +1,11 @@
+export * from './auditorias-eticas.service';
+import { AuditoriasEticasApiService } from './auditorias-eticas.service';
+export * from './escaneos.service';
+import { EscaneosApiService } from './escaneos.service';
+export * from './ingredientes.service';
+import { IngredientesApiService } from './ingredientes.service';
+export * from './metricas.service';
+import { MetricasApiService } from './metricas.service';
+export * from './sistema.service';
+import { SistemaApiService } from './sistema.service';
+export const APIS = [AuditoriasEticasApiService, EscaneosApiService, IngredientesApiService, MetricasApiService, SistemaApiService];
