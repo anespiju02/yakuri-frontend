@@ -25,6 +25,7 @@ export class IngredientsPageComponent implements OnInit {
   readonly selectedStatus = signal<string>('all');
   readonly loading = signal<boolean>(false);
   readonly ingredients = signal<Ingredient[]>([]);
+  readonly usingLocalFallback = signal<boolean>(false);
 
   readonly verifiedCount = computed(
     () => this.ingredients().filter((i) => i.status === 'verified').length,
@@ -44,13 +45,17 @@ export class IngredientsPageComponent implements OnInit {
 
   loadIngredients(): void {
     this.loading.set(true);
+    this.usingLocalFallback.set(false);
     const status = this.selectedStatus();
     const query = this.searchQuery;
 
     this.api
       .getIngredients(status, query)
       .pipe(
-        catchError(() => of(this.fallback.getAllIngredients(status, query))),
+        catchError(() => {
+          this.usingLocalFallback.set(true);
+          return of(this.fallback.getAllIngredients(status, query));
+        }),
         finalize(() => this.loading.set(false)),
       )
       .subscribe((list) => this.ingredients.set(list));

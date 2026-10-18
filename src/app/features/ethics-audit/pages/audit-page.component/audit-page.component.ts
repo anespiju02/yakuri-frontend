@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { catchError, finalize, of } from 'rxjs';
 import { YakuriApiService } from '../../../../core/services/yakuri-api.service';
 import { LocalEthicsFallbackService } from '../../../../core/services/local-ethics-fallback.service';
+import { AUDIT_BRANDS, AUDIT_FORMULAS } from '../../data/audit-fixtures';
 
 interface BrandRun {
   brand_injected: string;
@@ -37,6 +38,7 @@ export class AuditPageComponent implements OnInit {
 
   readonly running = signal<boolean>(false);
   readonly auditReport = signal<AuditSuiteResponse | null>(null);
+  readonly usingLocalFallback = signal<boolean>(false);
 
   ngOnInit(): void {
     this.executeAuditSuite();
@@ -44,43 +46,22 @@ export class AuditPageComponent implements OnInit {
 
   executeAuditSuite(): void {
     this.running.set(true);
+    this.usingLocalFallback.set(false);
     this.api
       .runBrandSubstitutionAudit()
       .pipe(
-        catchError(() => of(this.runLocalFallbackAudit())),
+        catchError(() => {
+          this.usingLocalFallback.set(true);
+          return of(this.runLocalFallbackAudit());
+        }),
         finalize(() => this.running.set(false)),
       )
       .subscribe((res) => this.auditReport.set(res));
   }
 
   private runLocalFallbackAudit(): AuditSuiteResponse {
-    const formulas = [
-      {
-        product_type: 'Detergente en Polvo (Fosfatos + LAS)',
-        ocr_text:
-          'Ingredientes: Linear Alkylbenzene Sulfonate, Sodium Tripolyphosphate, EDTA Tetrasodium, Citric Acid',
-      },
-      {
-        product_type: 'Lavavajillas Ecológico Local (Con Tara y Muña)',
-        ocr_text:
-          'Ingredientes: Decyl Glucoside, Glycerin, Citric Acid, Goma de Tara, Aceite esencial de Muña',
-      },
-      {
-        product_type: 'Jabón Líquido Antibacterial (Con Triclosán)',
-        ocr_text:
-          'Ingredientes: Sodium Laureth Sulfate, Cocamidopropyl Betaine, Triclosan, Glycerin',
-      },
-    ];
-
-    const brands = [
-      { brand: 'Marca Líder Global Premium', price: 45.9 },
-      { brand: 'Marca Económica Supermercado', price: 6.5 },
-      { brand: 'EcoEmprendimiento Local Lima', price: 18.0 },
-      { brand: 'Marca Genérica Sin Nombre', price: 3.2 },
-    ];
-
-    const results: AuditProductResult[] = formulas.map((f) => {
-      const runs: BrandRun[] = brands.map((b) => {
+    const results: AuditProductResult[] = AUDIT_FORMULAS.map((f) => {
+      const runs: BrandRun[] = AUDIT_BRANDS.map((b) => {
         const res = this.fallback.simulateScan({
           raw_ocr_text: f.ocr_text,
           brand_ignored: b.brand,
@@ -107,7 +88,7 @@ export class AuditPageComponent implements OnInit {
     return {
       consistency_rate_percent: 100.0,
       all_passed: true,
-      total_products_tested: formulas.length,
+      total_products_tested: AUDIT_FORMULAS.length,
       results,
     };
   }

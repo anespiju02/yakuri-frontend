@@ -8,6 +8,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class LocalEthicsFallbackService {
+  // Este catálogo debe mantenerse sincronizado manualmente con yakuri-backend/app/database.py. Si el backend agrega o cambia un ingrediente, replicar aquí.
   private readonly db: Ingredient[] = [
     {
       id: 'ing_0001',
@@ -97,6 +98,19 @@ export class LocalEthicsFallbackService {
       source: 'ECHA',
       source_url: 'https://echa.europa.eu/',
       last_reviewed: '2026-01-25',
+    },
+    {
+      id: 'ing_0008',
+      inci_name: 'Sodium Hypochlorite',
+      synonyms: ['hipoclorito de sodio', 'lejia', 'cloro activo'],
+      category: 'desinfectante / blanqueador',
+      water_impact_weight: 0.85,
+      status: 'verified',
+      justification:
+        'Altamente reactivo y tóxico para organismos acuáticos; puede formar subproductos organoclorados persistentes.',
+      source: 'US EPA',
+      source_url: 'https://comptox.epa.gov/dashboard/',
+      last_reviewed: '2026-01-30',
     },
     {
       id: 'ing_0009',

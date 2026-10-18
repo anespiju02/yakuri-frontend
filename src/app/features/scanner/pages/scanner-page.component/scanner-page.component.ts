@@ -47,7 +47,7 @@ export class ScannerPageComponent implements OnInit {
       price: 8.5,
       ocrText:
         'Ingredientes: Linear Alkylbenzene Sulfonate, Sodium Tripolyphosphate (STPP), EDTA Tetrasodium',
-      highlightRule: 'Regla 6.4',
+      highlightRule: 'Impacto alto verificado',
     },
   ];
 
@@ -57,6 +57,7 @@ export class ScannerPageComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly scanResult = signal<ProductScanResult | null>(null);
+  readonly usingLocalFallback = signal<boolean>(false);
 
   ngOnInit(): void {
     this.runScan();
@@ -71,6 +72,7 @@ export class ScannerPageComponent implements OnInit {
 
   runScan(): void {
     this.loading.set(true);
+    this.usingLocalFallback.set(false);
     const payload = {
       raw_ocr_text: this.rawOcrText,
       brand_ignored: this.brandIgnored,
@@ -80,7 +82,10 @@ export class ScannerPageComponent implements OnInit {
     this.api
       .scanLabel(payload)
       .pipe(
-        catchError(() => of(this.fallback.simulateScan(payload))),
+        catchError(() => {
+          this.usingLocalFallback.set(true);
+          return of(this.fallback.simulateScan(payload));
+        }),
         finalize(() => this.loading.set(false)),
       )
       .subscribe((res) => this.scanResult.set(res));

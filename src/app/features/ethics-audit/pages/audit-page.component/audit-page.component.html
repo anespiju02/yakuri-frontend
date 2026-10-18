@@ -25,6 +25,13 @@
     </button>
   </div>
 
+  @if (usingLocalFallback()) {
+  <div class="p-4 rounded-2xl border border-amber-500/50 bg-amber-500/10 text-sm text-amber-100" role="status">
+    <p class="font-bold text-amber-300">Modo simulación local</p>
+    <p class="mt-1">El backend no respondió. Los valores son representativos pero no provienen de la API en vivo.</p>
+  </div>
+  }
+
   @if (auditReport(); as report) {
   <!-- KPIs de Consistencia -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
